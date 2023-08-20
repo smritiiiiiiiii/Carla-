@@ -12,17 +12,12 @@ except IndexError:
 import carla 
 from carla import ColorConverter as cc
 import math 
-import random 
-import time 
+import random  
 import numpy as np
-import cv2
-import argparse
-import collections
+import argparse 
 import datetime
 import logging
-
 import re
-
 import weakref
 
 try:
@@ -77,6 +72,13 @@ def get_actor_display_name(actor, truncate=250):
     name = ' '.join(actor.type_id.replace('_', '.').title().split('.')[1:])
     return (name[:truncate - 1] + u'\u2026') if len(name) > truncate else name
 
+
+speed = None
+throttle = None
+steer = None ,
+type = "Straight"
+output = []
+
 class CameraManager(object):
     def __init__(self, parent_actor, hud, gamma_correction):
         self.sensor = None
@@ -127,7 +129,6 @@ class CameraManager(object):
                     if attr_name == 'range':
                         self.lidar_range = float(attr_value)
 
-
             item.append(bp)
         self.index = None
 
@@ -168,7 +169,7 @@ class CameraManager(object):
             display.blit(self.surface, (0, 0))
 
     @staticmethod
-    def _parse_image(weak_self, image):
+    def _parse_image(weak_self, image, output_type= "straight"):
         self = weak_self()
         if not self:
             return
@@ -202,8 +203,20 @@ class CameraManager(object):
             array = array[:, :, :3]
             array = array[:, :, ::-1]
             self.surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
+            
+            if image.frame%60 == 0 and speed and throttle and steer:
+                my_dict = {
+                    "speed" : speed ,
+                    "throtle" : throttle,
+                    "steer":steer,
+                    "image_name" : image.frame
+                }
+                image.save_to_disk('output_type/%08d' % image.frame)
+
+                
         if self.recording:
-            image.save_to_disk('_out/%08d' % image.frame)
+            image.save_to_disk('output_type/%08d' % image.frame)
+            
 
 
 #Class for setting up the environment
@@ -737,6 +750,7 @@ def game_loop(args):
         clock = pygame.time.Clock()
         while True:
             clock.tick_busy_loop(60)
+            
             if controller.parse_events(client, world, clock):
                 return
             world.tick(clock)
@@ -795,6 +809,11 @@ def main():
         default=2.2,
         type=float,
         help='Gamma correction of the camera (default: 2.2)')
+    argparser.add_argument(
+        '-output',
+        default="straight",
+        type=str,
+        help='type of data we storing left, right, center')
     args = argparser.parse_args()
 
     args.width, args.height = [int(x) for x in args.res.split('x')]
@@ -806,10 +825,13 @@ def main():
 
     print(__doc__)
 
-    # try:
+    try:
 
-    game_loop(args)
-
+        game_loop(args)
+    
+    finally:
+        with open(output_type+'/output_data.txt', 'w') as file:
+                    file.write(str(output))
     # except KeyboardInterrupt:
     #     print('\nCancelled by user. Bye!')
 
