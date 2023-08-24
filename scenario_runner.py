@@ -249,6 +249,24 @@ class World(object):
         self.recording_enabled = False
         self.recording_start = 0
         self.constant_velocity_enabled = False
+        
+        
+    def read_spawn_point(self, filename="spawn_point.txt" , dir = None):
+            points = []
+            with open(filename, 'r') as file:
+                for line in file:
+                    parts = line.strip().split()
+                    if len(parts) == 4:
+                        x, y, z, dir_value = parts[0], parts[1], parts[2], parts[3]
+                        if dir == None:
+                            points.append((x, y, z, dir_value))
+                        elif dir == dir_value:
+                            points.append((x, y, z, dir_value))
+                    else:
+                        print(f"Ignoring invalid line: {line}")
+
+            return points
+
 
     def restart(self):
         self.player_max_speed = 1.589
@@ -275,6 +293,15 @@ class World(object):
             print("No recommended values for 'speed' attribute")
         # Spawn the player.
         if self.player is not None:
+            
+            # here we will decide different spawn location for 
+            # lt = [
+            #     [x,y,z,"left"],
+            #     [x,y,z,"right"],
+            #     [z,y,z,"straight"]   
+            #  ]
+            # left , right , straight
+            # points = self.read_spawn_point(dir = "right")
             spawn_point = self.player.get_transform()
             spawn_point.location.z += 2.0
             spawn_point.rotation.roll = 0.0
@@ -767,6 +794,7 @@ def game_loop(args):
 
 
 def main():
+    
     argparser = argparse.ArgumentParser(
         description='CARLA Manual Control Client')
     argparser.add_argument(
