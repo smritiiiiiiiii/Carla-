@@ -457,8 +457,10 @@ class HUD(object):
             'Simulation time: % 12s' % datetime.timedelta(seconds=int(self.simulation_time)),
             '',
             'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
-            'Height:  % 18.0f m' % t.location.z,
-            '']
+            'Height:  Z = %f m' % (t.location.z),
+            "cordinates: x = %f m" % (t.location.x),
+            "cordinates: y = %f m" % (t.location.y)
+            ]
         if isinstance(c, carla.VehicleControl):
             self._info_text += [
                 ('Throttle:', c.throttle, 0.0, 1.0),
