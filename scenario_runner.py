@@ -251,16 +251,14 @@ class World(object):
         self.constant_velocity_enabled = False
         
         
-    def read_spawn_point(self, filename="spawn_point.txt" , dir = None):
+    def read_spawn_point(self, filename="spawn_point.txt" , dir = "left"):
             points = []
             with open(filename, 'r') as file:
                 for line in file:
                     parts = line.strip().split()
                     if len(parts) == 4:
                         x, y, z, dir_value = parts[0], parts[1], parts[2], parts[3]
-                        if dir == None:
-                            points.append((x, y, z, dir_value))
-                        elif dir == dir_value:
+                        if  dir == dir_value:
                             points.append((x, y, z, dir_value))
                     else:
                         print(f"Ignoring invalid line: {line}")
@@ -303,6 +301,7 @@ class World(object):
             # left , right , straight
             # points = self.read_spawn_point(dir = "right")
             spawn_point = self.player.get_transform()
+            print("Spawn_point" , )
             spawn_point.location.z += 2.0
             spawn_point.rotation.roll = 0.0
             spawn_point.rotation.pitch = 0.0
@@ -315,6 +314,7 @@ class World(object):
                 sys.exit(1)
             spawn_points = self.map.get_spawn_points()
             spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
+            print("Spawn point" , spawn_point)
             self.player = self.world.try_spawn_actor(blueprint, spawn_point)
         # Set up the sensors.
        
@@ -843,7 +843,7 @@ def main():
         type=str,
         help='type of data we storing left, right, center')
     args = argparser.parse_args()
-
+    output_type = "straight"
     args.width, args.height = [int(x) for x in args.res.split('x')]
 
     log_level = logging.DEBUG if args.debug else logging.INFO
